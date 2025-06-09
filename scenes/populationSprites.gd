@@ -54,15 +54,32 @@ func Ind_got_score(ind):
 var subViews=[]
 
 func select(population):
+	# selektujemo elitni procenat najbolje rangiranih jedinki
+	var elite_percentage = 0.3
+	var elite_count = int(len(population) * elite_percentage)
+	var chosen = []
+
+	# dodajemo elitu direktno
+	for i in range(elite_count):
+		chosen.append(population[i])
+
+	# nasumično biramo još nekoliko iz ostatka populacije
+	var remaining = population.slice(elite_count, len(population))
+	var additional_needed = len(population) / 2 - elite_count
+	for i in range(int(additional_needed)):
+		var random_index = randi_range(0, len(remaining) - 1)
+		chosen.append(remaining[random_index])
+	
+	return chosen
 	# ovde kucate kod koji obavlja proces selekcije.
 	# treba da vratite podskup populacije
 	# primer:
 	# jedinke populacije su sortirane po uspesnosti
 	# pa samo uzimamo uspesniju polovinu
-	var chosen=[]
-	for i in range(int(len(population)/2)):
-		chosen.append(population[i])
-	return chosen;
+	#var chosen=[]
+	#for i in range(int(len(population)/2)):
+		#chosen.append(population[i])
+	#return chosen;
 func cross(population):
 	# ovde kucate kod koji obavlja proces ukrstanja
 	# cilj je da se napravi nov objekat sa reflexMatrix
@@ -96,20 +113,20 @@ func cross(population):
 		#children.append(Individual.new(child2,str(numberOfIndividuals+1)))
 		#numberOfIndividuals+=1
 	#return children
-	# Kreiramo novu listu za decu
+	# kreiramo novu listu za decu
 	var children = []
 	
-	# Polovina sledeće generacije su direktne kopije roditelja (elitizam)
+	# polovina sledeće generacije su direktne kopije roditelja
 	for p in population:
 		children.append(shallowCopy(p))
 	
-	# Druga polovina - ukrštanje
+	# druga polovina - ukrštanje
 	while len(children) < len(population) * 2:
 		# Nasumično biramo dva roditelja
 		var parent1 = population[randi_range(0, len(population) - 1)]
 		var parent2 = population[randi_range(0, len(population) - 1)]
 		
-		# Generišemo dva deteta sa kombinovanim genima
+		# generišemo dva deteta sa kombinovanim genima
 		var child1 = []
 		var child2 = []
 		for i in range(16):  # broj gena
@@ -121,14 +138,13 @@ func cross(population):
 				child1.append(parent2.genes[i])
 				child2.append(parent1.genes[i])
 		
-		# Dodajemo decu u novu generaciju
+		# dodajemo decu u novu generaciju
 		children.append(Individual.new(child1, str(numberOfIndividuals)))
 		numberOfIndividuals += 1
 		children.append(Individual.new(child2, str(numberOfIndividuals)))
 		numberOfIndividuals += 1
 	
-	# Vraćamo samo onoliko jedinki koliko je originalna veličina populacije
-	return children#.slice(0, len(population))
+	return children
 
 var numberOfIndividuals=0
 func mutate(population):
