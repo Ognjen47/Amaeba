@@ -68,44 +68,86 @@ func cross(population):
 	# cilj je da se napravi nov objekat sa reflexMatrix
 	# koji je napravljen od delova svojih "roditelja"
 	# primer:
-	var children=[]
+	#var children=[]
 	# polovina sledece populacije ce biti roditelji
-	for p in population:
-		children.append(p)
+	#for p in population:
+		#children.append(p)
 	#ukrstamo na dalje nasumicno 2 roditelja tako da dobijemo uvek
 	# 2 deteta sa "suprotnim" osobinama oba roditelja
 	# tako cemo ponovo dobiti isti broj jedinki za sledecu generaciju
-	for parent1 in population:
+	#for parent1 in population:
 		# izabrati 2 roditelja, prvi uzimamo redom, a drugog 
 		# biramo nasumicno. Ovaj deo koda mozete da menjate 
 		# odabir je na vama, ovo je samo primer
-		var parent2=population[randi_range(0,len(population)-1)];
+		#var parent2=population[randi_range(0,len(population)-1)];
 		#kopiranje matrice
-		var child1=[]
-		var child2=[]
-		for i in range(16):# broj elemenata matrice (gena)
-			var odabir=randf() 	#bacamo novcic i biramo gen prvog 
+		#var child1=[]
+		#var child2=[]
+		#for i in range(16):# broj elemenata matrice (gena)
+			#var odabir=randf() 	#bacamo novcic i biramo gen prvog 
 								# ili drugog roditelja
-			if(odabir<=0.5):
+			#if(odabir<=0.5):
+				#child1.append(parent1.genes[i])
+				#child2.append(parent2.genes[i])
+			#else:
+				#child2.append(parent1.genes[i])
+				#child1.append(parent2.genes[i])
+		#children.append(Individual.new(child1,str(numberOfIndividuals)))
+		#children.append(Individual.new(child2,str(numberOfIndividuals+1)))
+		#numberOfIndividuals+=1
+	#return children
+	# Kreiramo novu listu za decu
+	var children = []
+	
+	# Polovina sledeće generacije su direktne kopije roditelja (elitizam)
+	for p in population:
+		children.append(shallowCopy(p))
+	
+	# Druga polovina - ukrštanje
+	while len(children) < len(population) * 2:
+		# Nasumično biramo dva roditelja
+		var parent1 = population[randi_range(0, len(population) - 1)]
+		var parent2 = population[randi_range(0, len(population) - 1)]
+		
+		# Generišemo dva deteta sa kombinovanim genima
+		var child1 = []
+		var child2 = []
+		for i in range(16):  # broj gena
+			var odabir = randf()
+			if odabir <= 0.5:
 				child1.append(parent1.genes[i])
 				child2.append(parent2.genes[i])
 			else:
-				child2.append(parent1.genes[i])
 				child1.append(parent2.genes[i])
-		children.append(Individual.new(child1,str(numberOfIndividuals)))
-		#children.append(Individual.new(child2,str(numberOfIndividuals+1)))
-		numberOfIndividuals+=1
-	return children
+				child2.append(parent1.genes[i])
+		
+		# Dodajemo decu u novu generaciju
+		children.append(Individual.new(child1, str(numberOfIndividuals)))
+		numberOfIndividuals += 1
+		children.append(Individual.new(child2, str(numberOfIndividuals)))
+		numberOfIndividuals += 1
+	
+	# Vraćamo samo onoliko jedinki koliko je originalna veličina populacije
+	return children#.slice(0, len(population))
 
 var numberOfIndividuals=0
 func mutate(population):
 	# ovde kucate kod koji obavlja proces mutacije.
 	# izaberete jednu, ili mali broj jedinki,
 	# i promenite joj nasumicno na neki nacin reflexMatrix
-	var mutated=population[randi_range(0,len(population)-1)]
-	mutated.genes[randi_range(0,16-1)]=randf()-0.5
-	mutated.name=mutated.name+"M"
-	return population;
+	var mutation_rate = 0.35
+	var num_to_mutate = int(len(population) * mutation_rate)
+	
+	for i in range(num_to_mutate):
+		var index = randi_range(0, len(population) - 1)
+		var individual = population[index]
+		# odabir jednog gena za mutaciju
+		var gene_index = randi_range(0, 15)
+		# mutacija: promena vrednosti gena nasumično između -0.5 i 0.5
+		individual.genes[gene_index] = randf() - 0.5
+		individual.name += "M"  # dodaj oznaku da je mutiran
+
+	return population
 
 func newGeneration():
 	var population=[]
@@ -157,5 +199,3 @@ func _ready():
 
 func _process(delta):
 	pass
-
-
